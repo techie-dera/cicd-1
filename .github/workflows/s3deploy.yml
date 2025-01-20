@@ -1,4 +1,4 @@
-name: Deploy Static Site to AWS S3
+    name: Deploy Static Site to AWS S3
 
 on:
   push:
@@ -30,4 +30,4 @@ jobs:
       # Invalidate CloudFront cache (Optional, if using CloudFront)
       - name: Invalidate CloudFront cache
         run: |
-          aws cloudfront create-invalidation --distribution-id your-cloudfront-id --paths "/*"
+          aws cloudfront create-invalidation --distribution-id E3MKQIUBE8J2YH --paths "/*"
