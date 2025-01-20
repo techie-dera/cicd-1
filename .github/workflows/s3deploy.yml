@@ -1,39 +1,45 @@
-name: Deploy to S3
+name: Upload Static Website to S3
 
 on:
   push:
     branches:
-      - main
-
+      - main  
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2  # Use version 2 of the checkout action
 
-      # Optional: Install dependencies and run build (if applicable)
-      - name: Install dependencies and build
+      # Step 2: Install dependencies (only if needed, e.g., for a Node.js or static site generator)
+      - name: Install dependencies
         run: |
-          npm install
-          npm run build  # Ensure this creates the 'build/public' directory
+          npm install  # Or use 'yarn install' if using Yarn
 
-      # Step 1: Check if the 'source_dir' exists
-      - name: Check if source_dir exists
+      # Step 3: Build the static site
+      - name: Build the static website
         run: |
-          if [ ! -d "./build/public" ]; then
-            echo "Error: Source directory ./build/public does not exist"
-            exit 1
+          npm run build  # Replace this with the build command for your static site generator, e.g., 'gatsby build', 'hugo', 'next build', etc.
+
+      # Step 4: Verify that the build output directory exists
+      - name: Check if build directory exists
+        run: |
+          if [ ! -d "public" ]; then
+            echo "Error: The 'public' directory does not exist. Exiting."
+            exit 1  # Exit the workflow if the directory doesn't exist
           fi
 
-      # Step 2: Sync files to S3
+      # Step 5: Sync the static files to S3
       - name: Sync files to S3
         uses: jakejarvis/s3-sync-action@master
         with:
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: 'us-east-2'
-          s3_bucket: ${{ secrets.AWS_S3_BUCKET }}
-          source_dir: './build/public'  # Make sure this path is correct
-          acl: 'public-read'
-          delete: true
+          args: --acl public-read --follow-symlinks --delete  # Optional: public-read for public files, --delete to remove files no longer present
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-2'  # Replace with your AWS region (default is us-east-1)
+          SOURCE_DIR: 'public'  # Directory containing the built static files
+
