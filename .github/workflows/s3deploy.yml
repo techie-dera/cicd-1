@@ -1,45 +1,33 @@
-name: Upload Static Website to S3
+name: Deploy Static Site to AWS S3
 
 on:
   push:
     branches:
-      - main  
+      - main # Trigger the workflow when pushing to the main branch
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
+      # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v2  # Use version 2 of the checkout action
+        uses: actions/checkout@v3
 
-      # Step 2: Install dependencies (only if needed, e.g., for a Node.js or static site generator)
-      - name: Install dependencies
-        run: |
-          npm install  # Or use 'yarn install' if using Yarn
-
-      # Step 3: Build the static site
-      - name: Build the static website
-        run: |
-          npm run build  # Replace this with the build command for your static site generator, e.g., 'gatsby build', 'hugo', 'next build', etc.
-
-      # Step 4: Verify that the build output directory exists
-      - name: Check if build directory exists
-        run: |
-          if [ ! -d "public" ]; then
-            echo "Error: The 'public' directory does not exist. Exiting."
-            exit 1  # Exit the workflow if the directory doesn't exist
-          fi
-
-      # Step 5: Sync the static files to S3
-      - name: Sync files to S3
-        uses: jakejarvis/s3-sync-action@master
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          args: --acl public-read --follow-symlinks --delete  # Optional: public-read for public files, --delete to remove files no longer present
-        env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'us-east-2'  # Replace with your AWS region (default is us-east-1)
-          SOURCE_DIR: 'public'  # Directory containing the built static files
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-2' # Specify your AWS region
 
+      # Sync static files to S3
+      - name: Deploy to S3
+        run: |
+          aws s3 sync ./path-to-your-static-files/ s3://your-bucket-name --delete
+
+      # Invalidate CloudFront cache (Optional, if using CloudFront)
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id your-cloudfront-id --paths "/*"
