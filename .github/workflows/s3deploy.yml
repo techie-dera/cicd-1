@@ -25,7 +25,7 @@ jobs:
       # Sync static files to S3
       - name: Deploy to S3
         run: |
-          aws s3 sync ./startbootstrap-creative-gh-pages/startbootstrap/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          aws s3 sync ./startbootstrap-creative-gh-pages/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
 
       # Invalidate CloudFront cache (Optional, if using CloudFront)
       - name: Invalidate CloudFront cache
