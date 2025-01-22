@@ -27,7 +27,4 @@ jobs:
         run: |
           aws s3 sync ./assets/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
 
-      # Invalidate CloudFront cache (Optional, if using CloudFront)
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_ID }} --paths "/*"
+   
