@@ -3,7 +3,7 @@ name: Deploy Static Site to S3
 on:
   push:
     branches:
-      - main  
+      - main  # Trigger on push to the main branch (you can change the branch name)
 
 jobs:
   deploy:
@@ -14,31 +14,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Set up Node.js (if you're using a build step like React, Vue, etc.)
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '17'  # Change to the version you need.
-
-      # Step 3: Install dependencies and build the project (if applicable)
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build project (if applicable)
-        run: npm run build  # Or any other build command for your static site
-
-      # Step 4: Configure AWS CLI (Using GitHub secrets for AWS credentials)
+      # Step 2: Set up AWS CLI (using GitHub secrets for AWS credentials)
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}  # You can set a default region
+          aws-region: ${{ secrets.AWS_REGION }}  # Make sure the region is set in GitHub secrets
 
-      # Step 5: Sync files to the S3 bucket
+      # Step 3: Sync files to the S3 bucket
       - name: Sync files to S3 bucket
         run: |
-          aws s3 sync ./build/ s3://${{ secrets.S3_BUCKET_NAME }} --delete --exact-timestamps
-        # If you're not using a build step and have static files in a directory, update the path accordingly (e.g., ./dist/).
-        
-    
+          aws s3 sync ./static/ s3://${{ secrets.S3_BUCKET_NAME }} --delete --exact-timestamps
+        # Replace `./static/` with the path to your static files directory if it's different
+
+     
