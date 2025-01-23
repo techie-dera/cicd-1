@@ -1,22 +1,31 @@
-name: Deploy Static Site to S3
+name: Deploy to AWS S3
 
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch (you can change the branch name)
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v2
-         with:
-        args: --acl public-read --follow-symlinks --delete
+    # Checkout the repository code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Install AWS CLI
+    - name: Install AWS CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y awscli
+
+    # Sync static files to S3
+    - name: Deploy to S3
       env:
-        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
+        S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      run: |
+        aws s3 sync ./assets/ s3://$S3_BUCKET_NAME --delete --region $AWS_REGION
